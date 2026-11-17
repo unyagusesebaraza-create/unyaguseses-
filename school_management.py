@@ -210,14 +210,51 @@ class SchoolManagementApp:
         menu.add_cascade(label="Account", menu=account)
         self.root.config(menu=menu)
 
+    @staticmethod
+    def draw_school_badge(canvas):
+        canvas.delete("all")
+        canvas.create_oval(26, 12, 64, 50, fill="#ffd866", outline="#f5b106")
+        canvas.create_polygon(50, 28, 120, 12, 190, 28, fill="#efc95b", outline="#ca9a2b")
+        canvas.create_rectangle(60, 32, 175, 88, fill="#f4f9ff", outline="#7aa7cf", width=2)
+        canvas.create_rectangle(82, 48, 100, 68, fill="#90c2ff", outline="#6e9dde")
+        canvas.create_rectangle(108, 48, 126, 68, fill="#90c2ff", outline="#6e9dde")
+        canvas.create_rectangle(134, 48, 152, 68, fill="#90c2ff", outline="#6e9dde")
+        canvas.create_rectangle(96, 68, 142, 84, fill="#8bb4ff", outline="#5b8ed6")
+        canvas.create_rectangle(20, 88, 68, 92, fill="#a8cbff", outline="#85b5ff")
+        canvas.create_rectangle(150, 88, 188, 92, fill="#a8cbff", outline="#85b5ff")
+        canvas.create_line(20, 90, 40, 74, fill="#6d8cd6", width=2)
+        canvas.create_line(188, 90, 170, 74, fill="#6d8cd6", width=2)
+        canvas.create_rectangle(28, 70, 52, 84, fill="#7ba8e8", outline="#5f8dd7")
+        canvas.create_rectangle(164, 70, 188, 84, fill="#7ba8e8", outline="#5f8dd7")
+        canvas.create_rectangle(68, 26, 85, 40, fill="#b7ecff", outline="#88c7e8")
+        canvas.create_rectangle(85, 24, 102, 40, fill="#d6f2ff", outline="#88c7e8")
+        canvas.create_rectangle(102, 26, 119, 40, fill="#b7ecff", outline="#88c7e8")
+        canvas.create_rectangle(119, 24, 136, 40, fill="#d6f2ff", outline="#88c7e8")
+        canvas.create_rectangle(136, 26, 153, 40, fill="#b7ecff", outline="#88c7e8")
+
     def create_ui(self):
         header = ttk.Frame(self.root, padding=(12, 10))
         header.pack(fill="x")
         ttk.Label(header, text="School Management System",
                   font=("TkDefaultFont", 16, "bold")).pack(side="left")
         ttk.Label(header, text=f"Administrator: {self.username}").pack(side="right")
+
+        hero = ttk.Frame(self.root, padding=(10, 6), relief="flat")
+        hero.pack(fill="x", padx=10)
+        hero_canvas = tk.Canvas(hero, width=260, height=100, bg="#eef6ff", highlightthickness=0)
+        hero_canvas.pack(side="right")
+        self.draw_school_badge(hero_canvas)
+        hero_text = ttk.Frame(hero)
+        hero_text.pack(side="left", fill="x", expand=True, padx=(0, 12))
+        ttk.Label(hero_text, text="Academic operations at a glance",
+                  font=("TkDefaultFont", 12, "bold")).pack(anchor="w")
+        ttk.Label(hero_text, text="Track students, fees, and exam performance with confidence.",
+                  foreground="#405a7d").pack(anchor="w", pady=(4, 0))
+        ttk.Label(hero_text, text="Keep your school records organized, accurate, and ready to report.",
+                  foreground="#6b7d95").pack(anchor="w")
+
         self.notebook = ttk.Notebook(self.root)
-        self.notebook.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+        self.notebook.pack(fill="both", expand=True, padx=10, pady=(10, 10))
         self.dashboard_tab = ttk.Frame(self.notebook, padding=12)
         self.students_tab = ttk.Frame(self.notebook, padding=10)
         self.payments_tab = ttk.Frame(self.notebook, padding=10)
@@ -361,10 +398,12 @@ class SchoolManagementApp:
                 entry.insert(0, default)
             entries[key] = entry
         form.columnconfigure(1, weight=1)
+
         def submit():
             values = {key: entry.get().strip() for key, entry in entries.items()}
             if on_submit(values):
                 dialog.destroy()
+
         buttons = ttk.Frame(form)
         buttons.grid(row=len(fields), column=0, columnspan=2, sticky="e", pady=(12, 0))
         ttk.Button(buttons, text="Cancel", command=dialog.destroy).pack(side="right", padx=(6, 0))
@@ -378,6 +417,7 @@ class SchoolManagementApp:
                   ("dob", "Date of birth (YYYY-MM-DD)", ""), ("gender", "Gender", ""),
                   ("guardian", "Guardian name", ""), ("phone", "Guardian phone", ""),
                   ("address", "Address", ""), ("admitted", "Admission date (YYYY-MM-DD)", date.today().isoformat())]
+
         def save(v):
             if not all(v[key] for key in ("admission", "first", "last", "class", "admitted")):
                 messagebox.showerror("Missing information", "Fill all required fields.", parent=self.root)
@@ -399,6 +439,7 @@ class SchoolManagementApp:
                 return False
             self.refresh_all()
             return True
+
         self.form_dialog("Admit student", fields, save)
 
     def student_id(self, admission):
@@ -410,6 +451,7 @@ class SchoolManagementApp:
         fields = [("admission", "Student admission number *", ""), ("amount", "Amount *", ""),
                   ("date", "Payment date (YYYY-MM-DD)", date.today().isoformat()),
                   ("term", "Term *", ""), ("method", "Payment method", ""), ("reference", "Receipt/reference", "")]
+
         def save(v):
             student_id = self.student_id(v["admission"])
             if student_id is None:
@@ -431,12 +473,14 @@ class SchoolManagementApp:
                            (student_id, amount, v["date"], v["term"], v["method"] or None, v["reference"] or None))
             self.refresh_all()
             return True
+
         self.form_dialog("Record fee payment", fields, save)
 
     def add_exam(self):
         fields = [("admission", "Student admission number *", ""), ("exam", "Exam name *", ""),
                   ("subject", "Subject *", ""), ("score", "Score *", ""), ("max", "Maximum score *", ""),
                   ("date", "Exam date (YYYY-MM-DD)", date.today().isoformat())]
+
         def save(v):
             student_id = self.student_id(v["admission"])
             if student_id is None:
@@ -458,6 +502,7 @@ class SchoolManagementApp:
                            (student_id, v["exam"], v["subject"], score, maximum, v["date"]))
             self.refresh_all()
             return True
+
         self.form_dialog("Record exam result", fields, save)
 
     def export_rows(self, kind):
@@ -581,7 +626,6 @@ class SchoolManagementApp:
             return
         self.username = login.username
         self.root.title("School Management System")
-        # Update the displayed administrator name after logging in again.
         for child in self.root.winfo_children():
             if isinstance(child, ttk.Frame):
                 for widget in child.winfo_children():
